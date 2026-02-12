@@ -322,7 +322,6 @@
 
   <!-- Jump scare overlay -->
   <div class="jumpscare" id="jumpscare" aria-hidden="true">
-    <!-- Cute-scary spider SVG -->
     <svg class="spider" viewBox="0 0 520 420" role="img" aria-label="Spider jump scare">
       <defs>
         <radialGradient id="sGlow" cx="50%" cy="45%" r="60%">
@@ -344,7 +343,6 @@
 
       <circle cx="260" cy="200" r="190" fill="url(#sGlow)"/>
 
-      <!-- legs -->
       <g stroke="rgba(230,230,255,0.75)" stroke-width="12" stroke-linecap="round" filter="url(#sDrop)" fill="none">
         <path d="M180 210 C120 170, 90 140, 60 120"/>
         <path d="M180 240 C120 240, 85 250, 55 265"/>
@@ -354,13 +352,11 @@
         <path d="M330 270 C380 305, 415 325, 455 350"/>
       </g>
 
-      <!-- body -->
       <g filter="url(#sDrop)">
         <ellipse cx="260" cy="250" rx="95" ry="85" fill="url(#sBody)" stroke="rgba(255,255,255,0.18)" stroke-width="6"/>
         <circle cx="260" cy="160" r="75" fill="url(#sBody)" stroke="rgba(255,255,255,0.18)" stroke-width="6"/>
       </g>
 
-      <!-- eyes -->
       <g>
         <circle cx="235" cy="155" r="14" fill="rgba(255,255,255,0.90)"/>
         <circle cx="285" cy="155" r="14" fill="rgba(255,255,255,0.90)"/>
@@ -382,12 +378,7 @@
     const glitterCanvas = document.getElementById("glitterConfetti");
     const gctx = glitterCanvas.getContext("2d", { alpha: true });
 
-    const glitter = {
-      pieces: [],
-      lastTs: 0,
-      density: 170,
-      wind: 22
-    };
+    const glitter = { pieces: [], lastTs: 0, density: 170, wind: 22 };
 
     function rand(min, max){ return min + Math.random() * (max - min); }
 
@@ -411,8 +402,7 @@
         [245, 247, 255],
       ];
       const [r,g,b] = palette[Math.floor(Math.random() * palette.length)];
-      const a = rand(0.22, 0.55);
-      return `rgba(${r},${g},${b},${a})`;
+      return `rgba(${r},${g},${b},${rand(0.22, 0.55)})`;
     }
 
     function makePiece(){
@@ -517,18 +507,18 @@
     resizeGlitter();
     requestAnimationFrame(tickGlitter);
 
-    // ---- Jump-scare helpers ----
+    // ---- Spider pops out after 4 seconds ----
     const jumpscare = document.getElementById("jumpscare");
     const wrap = document.getElementById("wrap");
     let scareFired = false;
 
     function beepScare(){
-      // quick built-in "beep" using WebAudio; no external files
       try{
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         const ac = new AudioCtx();
         const o = ac.createOscillator();
         const g = ac.createGain();
+
         o.type = "square";
         o.frequency.value = 220;
         g.gain.value = 0.0001;
@@ -543,9 +533,7 @@
         g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
 
         setTimeout(() => { o.stop(); ac.close(); }, 360);
-      } catch {
-        // ignore (some browsers require user gesture / block audio)
-      }
+      } catch { /* ignore */ }
     }
 
     function showSpiderJumpscare(){
@@ -557,12 +545,14 @@
       beepScare();
 
       setTimeout(() => wrap.classList.remove("shake"), 520);
-      setTimeout(() => {
-        jumpscare.classList.remove("show");
-      }, 1150);
+      setTimeout(() => jumpscare.classList.remove("show"), 1150);
     }
 
-    // ---- Button logic ----
+    window.addEventListener("load", () => {
+      setTimeout(showSpiderJumpscare, 4000);
+    });
+
+    // ---- Buttons logic ----
     const yesBtn = document.getElementById("yesBtn");
     const noBtn = document.getElementById("noBtn");
     const msg = document.getElementById("msg");
@@ -606,8 +596,6 @@
       if (locked) return;
 
       noAttempts += 1;
-
-      if (noAttempts === 2) showSpiderJumpscare();
 
       const { left, top } = getSafePosition();
       noBtn.style.left = `${left}px`;
